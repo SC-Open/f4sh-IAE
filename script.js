@@ -20,6 +20,8 @@ const scheduleConfig = {
   ]
 };
 
+const accentColor = "#FFB648";
+
 const shipLinks = {
   "Idris-P":
     "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=idris&sort=weight&direction=desc",
@@ -214,19 +216,15 @@ function updateSchedule(now = Date.now() / 1000) {
     }
 
     if (event.limitedSales) {
-      let limitedSalesLinks = "";
-      const sales = event.limitedSales.split(", ");
-      sales.forEach(sale => {
+      const limitedSalesLinks = event.limitedSales.split(", ").map(sale => {
         const link = shipLinks[sale.trim()];
         if (link) {
-          limitedSalesLinks += `<a href="${link}" class="limited-sales-link" target="_blank">${sale}</a>, `;
-        } else {
-          limitedSalesLinks += `${sale}, `;
+          return `<a href="${link}" class="limited-sales-link" target="_blank">${sale}</a>`;
         }
-      });
-      limitedSalesLinks = limitedSalesLinks.slice(0, -2);
+        return `<span class="limited-sales-item">${sale}</span>`;
+      }).join(", ");
 
-      eventHTML += `<div class="limited-sales">Limited Ship Sales: ${limitedSalesLinks}</div>`;
+      eventHTML += `<div class="limited-sales"><span class="limited-sales-label">Limited Ship Sales:</span> ${limitedSalesLinks}</div>`;
 
       event.waveTimestamps.forEach((waveTimestamp, waveIndex) => {
         const nextWaveTimestamp =
@@ -273,6 +271,7 @@ function updateCountdowns(now = Date.now() / 1000) {
 }
 
 window.onload = () => {
+  document.documentElement.style.setProperty("--accent-color", accentColor);
   populateTimeZones();
   const scheduleContainer = document.getElementById("schedule");
   if (scheduleContainer) {
@@ -293,7 +292,7 @@ function copyToDiscord() {
     `${scheduleConfig.title} Official Schedule:`,
     ...schedule.map(event => {
       const lines = [
-        `**${event.name}:** <t:${event.timestamp}:f>`
+        `**${event.name}:** <t:${event.timestamp}:f> in <t:${event.timestamp}:R>`
       ];
 
       if (event.limitedSales) {
