@@ -1,115 +1,45 @@
-const schedule = [
-  {
-    name: "RSI",
-    timestamp: 1763654400, // Nov 20, 2025 - 16:00 UTC
-    location: "The Vision Center",
-    limitedSales: "Constellation Phoenix",
-    waveTimestamps: [
-      1763654400, // Nov 20, 2025 - 16:00 UTC
-      1763668800, // Nov 20, 2025 - 20:00 UTC
-      1763683200, // Nov 21, 2025 - 00:00 UTC
-      1763697600, // Nov 21, 2025 - 04:00 UTC
-      1763712000, // Nov 21, 2025 - 08:00 UTC
-      1763726400  // Nov 21, 2025 - 12:00 UTC
-    ]
-  },
-  {
-    name: "Origin",
-    timestamp: 1763740800, // Nov 21, 2025 - 16:00 UTC
-    location: "The Vision Center",
-    limitedSales: "890 Jump",
-    waveTimestamps: [
-      1763740800, // Nov 21, 2025 - 16:00 UTC
-      1763755200, // Nov 21, 2025 - 20:00 UTC
-      1763769600, // Nov 22, 2025 - 00:00 UTC
-      1763784000, // Nov 22, 2025 - 04:00 UTC
-      1763798400, // Nov 22, 2025 - 08:00 UTC
-      1763812800  // Nov 22, 2025 - 12:00 UTC
-    ]
-  },
-  {
-    name: "Drake",
-    timestamp: 1763827200, // Nov 22, 2025 - 16:00 UTC
-    location: "The Vision Center",
-    limitedSales: "Kraken, Kraken Privateer, Kraken Conversion Kit",
-    waveTimestamps: [
-      1763827200, // Nov 22, 2025 - 16:00 UTC
-      1763841600, // Nov 22, 2025 - 20:00 UTC
-      1763856000, // Nov 23, 2025 - 00:00 UTC
-      1763870400, // Nov 23, 2025 - 04:00 UTC
-      1763884800, // Nov 23, 2025 - 08:00 UTC
-      1763899200  // Nov 23, 2025 - 12:00 UTC
-    ]
-  },
-  {
-    name: "Alien Manufacturers",
-    timestamp: 1763913600, // Nov 23, 2025 - 16:00 UTC
-    location: "The Vision Center"
-  },
-  {
-    name: "MISC, MIRAI, Kruger",
-    timestamp: 1764000000, // Nov 24, 2025 - 16:00 UTC
-    location: "The Vision Center",
-    limitedSales: "Hull E",
-    waveTimestamps: [
-      1764000000, // Nov 24, 2025 - 16:00 UTC
-      1764014400, // Nov 24, 2025 - 20:00 UTC
-      1764028800, // Nov 25, 2025 - 00:00 UTC
-      1764043200, // Nov 25, 2025 - 04:00 UTC
-      1764057600, // Nov 25, 2025 - 08:00 UTC
-      1764072000  // Nov 25, 2025 - 12:00 UTC
-    ]
-  },
-  {
-    name: "Anvil Aerospace",
-    timestamp: 1764086400, // Nov 25, 2025 - 16:00 UTC
-    location: "The Vision Center"
-  },
-  {
-    name: "ARGO, CNOU, Greycat",
-    timestamp: 1764172800, // Nov 26, 2025 - 16:00 UTC
-    location: "The Vision Center",
-    limitedSales: "Consolidated Outland Pioneer",
-    waveTimestamps: [
-      1764172800, // Nov 26, 2025 - 16:00 UTC
-      1764187200, // Nov 26, 2025 - 20:00 UTC
-      1764201600, // Nov 27, 2025 - 00:00 UTC
-      1764216000, // Nov 27, 2025 - 04:00 UTC
-      1764230400, // Nov 27, 2025 - 08:00 UTC
-      1764244800  // Nov 27, 2025 - 12:00 UTC
-    ]
-  },
-  {
-    name: "Crusader and Tumbril",
-    timestamp: 1764259200, // Nov 27, 2025 - 16:00 UTC
-    location: "The Vision Center"
-  },
-  {
-    name: "Aegis Dynamics",
-    timestamp: 1764345600, // Nov 28, 2025 - 16:00 UTC
-    location: "The Vision Center",
-    limitedSales: "Idris-P, Javelin, Idris K Kit",
-    waveTimestamps: [
-      1764345600, // Nov 28, 2025 - 16:00 UTC
-      1764360000, // Nov 28, 2025 - 20:00 UTC
-      1764374400, // Nov 29, 2025 - 00:00 UTC
-      1764388800, // Nov 29, 2025 - 04:00 UTC
-      1764403200, // Nov 29, 2025 - 08:00 UTC
-      1764417600  // Nov 29, 2025 - 12:00 UTC
-    ]
-  },
-  {
-    name: "Best In Show",
-    timestamp: 1764432000, // Nov 29, 2025 - 16:00 UTC
-    location: "The Vision Center"
-  },
-  {
-    name: "IAE 2955 Finale",
-    timestamp: 1764518400, // Nov 30, 2025 - 16:00 UTC
-    location: "The Vision Center",
-    end: 1764777600 // Dec 3, 2025 - 16:00 UTC
-  }
-];
+const DAY_SECONDS = 24 * 60 * 60;
+const WAVE_INTERVAL_SECONDS = 4 * 60 * 60;
+
+const scheduleConfig = {
+  title: "IAE 2956",
+  startTimestamp: Date.UTC(2026, 10, 13, 16) / 1000,
+  location: "Tobin Expo Center",
+  discordLocation: "The Vision Center",
+  events: [
+    { name: "RSI", days: 1, limitedSales: "Constellation Phoenix" },
+    { name: "Origin", days: 1, limitedSales: "890 Jump" },
+    { name: "Anvil Aerospace", days: 1 },
+    { name: "Crusader and Tumbril", days: 1 },
+    { name: "Drake", days: 1, limitedSales: "Kraken, Kraken Privateer, Kraken Conversion Kit" },
+    { name: "ARGO, CNOU, Greycat", days: 1, limitedSales: "Consolidated Outland Pioneer" },
+    { name: "MISC, MIRAI, Kruger", days: 1, limitedSales: "Hull E" },
+    { name: "Aegis Dynamics", days: 1, limitedSales: "Idris-P, Javelin, Idris K Kit" },
+    { name: "Alien Manufacturers", days: 1 },
+    { name: "Best In Show", days: 1 },
+    { name: "IAE 2956 Finale", days: 4, endLabel: "End of IAE 2956" }
+  ]
+};
+
+let nextTimestamp = scheduleConfig.startTimestamp;
+const schedule = scheduleConfig.events.map(({ days = 1, ...event }) => {
+  const timestamp = nextTimestamp;
+  const end = timestamp + days * DAY_SECONDS;
+  nextTimestamp = end;
+
+  return {
+    ...event,
+    timestamp,
+    end,
+    location: event.location ?? scheduleConfig.location,
+    ...(event.limitedSales && {
+      waveTimestamps: Array.from(
+        { length: 6 },
+        (_, index) => timestamp + index * WAVE_INTERVAL_SECONDS
+      )
+    })
+  };
+});
 
 function populateTimeZones() {
   const selector = document.getElementById("timezone-selector");
@@ -341,25 +271,31 @@ window.onload = () => {
 };
 
 function copyToDiscord() {
-  const discordSchedule =
-    `IAE 2955 Official Schedule:\n\n` +
-    `**RSI:**\n<t:1763654400:f> [The Vision Center <t:1763654400:R>]\nLimited Ship Sales: Constellation Phoenix\n` +
-    `Wave 1: <t:1763654400:T>, Wave 2: <t:1763668800:T>, Wave 3: <t:1763683200:T>, Wave 4: <t:1763697600:T>, Wave 5: <t:1763712000:T>, Wave 6: <t:1763726400:T>\n\n` +
-    `**Origin:**\n<t:1763740800:f> [The Vision Center <t:1763740800:R>]\nLimited Ship Sales: 890 Jump\n` +
-    `Wave 1: <t:1763740800:T>, Wave 2: <t:1763755200:T>, Wave 3: <t:1763769600:T>, Wave 4: <t:1763784000:T>, Wave 5: <t:1763798400:T>, Wave 6: <t:1763812800:T>\n\n` +
-    `**Drake:**\n<t:1763827200:f> [The Vision Center <t:1763827200:R>]\nLimited Ship Sales: Kraken, Kraken Privateer, Kraken Conversion Kit\n` +
-    `Wave 1: <t:1763827200:T>, Wave 2: <t:1763841600:T>, Wave 3: <t:1763856000:T>, Wave 4: <t:1763870400:T>, Wave 5: <t:1763884800:T>, Wave 6: <t:1763899200:T>\n\n` +
-    `**Alien Manufacturers:**\n<t:1763913600:f> [The Vision Center <t:1763913600:R>]\n\n` +
-    `**MISC, MIRAI, Kruger:**\n<t:1764000000:f> [The Vision Center <t:1764000000:R>]\nLimited Ship Sales: Hull E\n` +
-    `Wave 1: <t:1764000000:T>, Wave 2: <t:1764014400:T>, Wave 3: <t:1764028800:T>, Wave 4: <t:1764043200:T>, Wave 5: <t:1764057600:T>, Wave 6: <t:1764072000:T>\n\n` +
-    `**Anvil Aerospace:**\n<t:1764086400:f> [The Vision Center <t:1764086400:R>]\n\n` +
-    `**ARGO, CNOU, Greycat:**\n<t:1764172800:f> [The Vision Center <t:1764172800:R>]\nLimited Ship Sales: Consolidated Outland Pioneer\n` +
-    `Wave 1: <t:1764172800:T>, Wave 2: <t:1764187200:T>, Wave 3: <t:1764201600:T>, Wave 4: <t:1764216000:T>, Wave 5: <t:1764230400:T>, Wave 6: <t:1764244800:T>\n\n` +
-    `**Crusader and Tumbril:**\n<t:1764259200:f> [The Vision Center <t:1764259200:R>]\n\n` +
-    `**Aegis Dynamics:**\n<t:1764345600:f> [The Vision Center <t:1764345600:R>]\nLimited Ship Sales: Idris-P, Javelin, Idris K Kit\n` +
-    `Wave 1: <t:1764345600:T>, Wave 2: <t:1764360000:T>, Wave 3: <t:1764374400:T>, Wave 4: <t:1764388800:T>, Wave 5: <t:1764403200:T>, Wave 6: <t:1764417600:T>\n\n` +
-    `**Best In Show:**\n<t:1764432000:f> [The Vision Center <t:1764432000:R>]\n\n` +
-    `**IAE 2955 Finale:**\n<t:1764518400:f> [The Vision Center <t:1764518400:R>]\nEnd of IAE 2955: <t:1764777600:f>`;
+  const discordSchedule = [
+    `${scheduleConfig.title} Official Schedule:`,
+    "",
+    ...schedule.map(event => {
+      const lines = [
+        `**${event.name}:**`,
+        `<t:${event.timestamp}:f> [${scheduleConfig.discordLocation} <t:${event.timestamp}:R>]`
+      ];
+
+      if (event.limitedSales) {
+        lines.push(`Limited Ship Sales: ${event.limitedSales}`);
+        lines.push(
+          event.waveTimestamps
+            .map((timestamp, index) => `Wave ${index + 1}: <t:${timestamp}:T>`)
+            .join(", ")
+        );
+      }
+
+      if (event.endLabel) {
+        lines.push(`${event.endLabel}: <t:${event.end}:f>`);
+      }
+
+      return lines.join("\n");
+    })
+  ].join("\n\n");
 
   navigator.clipboard.writeText(discordSchedule).then(
     () => {
