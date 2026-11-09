@@ -20,6 +20,29 @@ const scheduleConfig = {
   ]
 };
 
+const shipLinks = {
+  "Idris-P":
+    "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=idris&sort=weight&direction=desc",
+  Javelin:
+    "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=javelin&sort=weight&direction=desc",
+  "Idris K Kit":
+    "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=Idris+P+After+Market+Kit&sort=weight&direction=desc",
+  "890 Jump":
+    "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=890&sort=weight&direction=desc",
+  "Constellation Phoenix":
+    "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=phoenix&sort=weight&direction=desc",
+  Kraken:
+    "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=kraken&sort=weight&direction=desc",
+  "Kraken Conversion Kit":
+    "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=kraken+conversion&sort=weight&direction=desc",
+  "Kraken Privateer":
+    "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=kraken+privateer&sort=weight&direction=desc",
+  "Hull E":
+    "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=hull+e&sort=weight&direction=desc",
+  "Consolidated Outland Pioneer":
+    "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=pioneer&sort=weight&direction=desc"
+};
+
 let nextTimestamp = scheduleConfig.startTimestamp;
 const schedule = scheduleConfig.events.map(({ days = 1, ...event }) => {
   const timestamp = nextTimestamp;
@@ -71,12 +94,23 @@ function populateTimeZones() {
   document.getElementById("timezone-info").textContent =
     `Your timezone is ${selector.value} and the schedule is based on that.`;
 
-  selector.addEventListener("change", updateSchedule);
+  selector.addEventListener("change", () => updateSchedule());
 }
 
 function convertTimestampToLocaleString(timestamp, timeZone) {
   const date = new Date(timestamp * 1000);
-  return date.toLocaleString("en-US", { timeZone, hour12: true });
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true
+  }).formatToParts(date);
+  const getPart = type => parts.find(part => part.type === type).value;
+
+  return `${getPart("day")} ${getPart("month")} ${getPart("year")}, ${getPart("hour")}:${getPart("minute")} ${getPart("dayPeriod")}`;
 }
 
 function getTimeLeft(timestamp, nextTimestamp, endTimestamp, now) {
@@ -87,8 +121,8 @@ function getTimeLeft(timestamp, nextTimestamp, endTimestamp, now) {
   if (endTimestamp) {
     const timeUntilEnd = endTimestamp - now;
     timeLeft = calculateTimeLeft(timeUntilEnd);
-    isHappening = now >= timestamp && now <= endTimestamp;
-    hasPassed = now > endTimestamp;
+    isHappening = now >= timestamp && now < endTimestamp;
+    hasPassed = now >= endTimestamp;
   } else {
     const duration = nextTimestamp ? (nextTimestamp - timestamp) : 86400;
     const timeUntilStart = timestamp - now;
@@ -99,6 +133,17 @@ function getTimeLeft(timestamp, nextTimestamp, endTimestamp, now) {
 
   return { text: timeLeft, isHappening, hasPassed };
 }
+
+function getSchedulePhase(now) {
+  return schedule.map(event => {
+    if (now >= event.end) return "finished";
+    if (now >= event.timestamp) return "active";
+    if (event.timestamp - now <= DAY_SECONDS) return "starting";
+    return "upcoming";
+  }).join("|");
+}
+
+let renderedSchedulePhase;
 
 function calculateTimeLeft(seconds) {
   if (!Number.isFinite(seconds)) return "00h:00m:00s";
@@ -121,32 +166,7 @@ function calculateTimeLeft(seconds) {
     .padStart(2, "0")}m:${secondsLeft.toString().padStart(2, "0")}s`;
 }
 
-function updateSchedule() {
-  const now = Date.now() / 1000;
-
-  const shipLinks = {
-    "Idris-P":
-      "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=idris&sort=weight&direction=desc",
-    Javelin:
-      "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=javelin&sort=weight&direction=desc",
-    "Idris K Kit":
-      "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=Idris+P+After+Market+Kit&sort=weight&direction=desc",
-    "890 Jump":
-      "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=890&sort=weight&direction=desc",
-    "Constellation Phoenix":
-      "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=phoenix&sort=weight&direction=desc",
-    Kraken:
-      "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=kraken&sort=weight&direction=desc",
-    "Kraken Conversion Kit":
-      "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=kraken+conversion&sort=weight&direction=desc",
-    "Kraken Privateer":
-      "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=kraken+privateer&sort=weight&direction=desc",
-    "Hull E":
-      "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=hull+e&sort=weight&direction=desc",
-    "Consolidated Outland Pioneer":
-      "https://robertsspaceindustries.com/store/pledge/browse/extras/?search=pioneer&sort=weight&direction=desc"
-  };
-
+function updateSchedule(now = Date.now() / 1000) {
   const selectedTimeZone = document.getElementById("timezone-selector").value;
   const scheduleContainer = document.getElementById("schedule");
   scheduleContainer.innerHTML = "";
@@ -168,14 +188,6 @@ function updateSchedule() {
     if (eventTimeLeft.isHappening) {
       eventHTML = `<div class="event event-active" aria-live="polite">`;
       const endTime = event.end ? event.end : event.timestamp + 24 * 3600;
-      const timeLeftToEnd = endTime - now;
-
-      let timeLeftText;
-      if (timeLeftToEnd > 0) {
-        timeLeftText = calculateTimeLeft(timeLeftToEnd);
-      } else {
-        timeLeftText = "Finished";
-      }
 
       eventHTML += `<div class="event-name happening-now">${
         event.name
@@ -188,9 +200,7 @@ function updateSchedule() {
       const diffInSeconds = event.timestamp - now;
       if (diffInSeconds > 0 && diffInSeconds <= 86400) {
         eventHTML += `<div class="event-name">${event.name}</div>
-          <div class="location">Event starting soon in: ${
-            eventTimeLeft.text
-          } at ${convertTimestampToLocaleString(
+          <div class="location">Event starting soon in: <span data-countdown-to="${event.timestamp}"></span> at ${convertTimestampToLocaleString(
           event.timestamp,
           selectedTimeZone
         )} [${event.location}]</div>`;
@@ -224,41 +234,41 @@ function updateSchedule() {
             ? event.waveTimestamps[waveIndex + 1]
             : waveTimestamp + 4 * 3600; // last wave = 4h window
 
-        const waveTimeLeft = getTimeLeft(
-          waveTimestamp,
-          nextWaveTimestamp,
-          null,
-          now
-        );
-
-        let waveStatus;
-        if (waveTimeLeft.isHappening) {
-          waveStatus = `Wave ${
-            waveIndex + 1
-          }: <span class="wave-happening-now">Started. Good Luck!</span>`;
-        } else if (waveTimeLeft.hasPassed) {
-          waveStatus = `Wave ${
-            waveIndex + 1
-          }: <span class="finished-wave">Passed</span>`;
-        } else {
-          waveStatus = `Wave ${waveIndex + 1}: ${waveTimeLeft.text}`;
-        }
-
-        eventHTML += `<div class="wave">${waveStatus}</div>`;
+        eventHTML += `<div class="wave" data-countdown-to="${waveTimestamp}" data-countdown-end="${nextWaveTimestamp}" data-wave-number="${waveIndex + 1}"></div>`;
       });
     }
 
     eventHTML += `</div>`;
     scheduleContainer.innerHTML += eventHTML;
   });
+
+  renderedSchedulePhase = getSchedulePhase(now);
+  updateCountdowns(now);
 }
 
-function updateCountdowns() {
-  const now = Date.now() / 1000;
+function updateCountdowns(now = Date.now() / 1000) {
+  const phase = getSchedulePhase(now);
+  if (phase !== renderedSchedulePhase) {
+    updateSchedule(now);
+    return;
+  }
 
   document.querySelectorAll("[data-countdown-to]").forEach(element => {
     const target = Number(element.dataset.countdownTo);
-    element.textContent = calculateTimeLeft(target - now);
+    const waveNumber = element.dataset.waveNumber;
+
+    if (waveNumber !== undefined) {
+      const end = Number(element.dataset.countdownEnd);
+      if (now >= end) {
+        element.innerHTML = `Wave ${waveNumber}: <span class="finished-wave">Passed</span>`;
+      } else if (now >= target) {
+        element.innerHTML = `Wave ${waveNumber}: <span class="wave-happening-now">Started. Good Luck!</span>`;
+      } else {
+        element.textContent = `Wave ${waveNumber}: ${calculateTimeLeft(target - now)}`;
+      }
+    } else {
+      element.textContent = calculateTimeLeft(target - now);
+    }
   });
 }
 
@@ -270,7 +280,7 @@ window.onload = () => {
   }
 
   updateSchedule();
-  setInterval(updateSchedule, 1000);
+  setInterval(updateCountdowns, 1000);
 
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get("action") === "copyToDiscord") {
