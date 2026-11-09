@@ -5,7 +5,6 @@ const scheduleConfig = {
   title: "IAE 2956",
   startTimestamp: Date.UTC(2026, 10, 13, 16) / 1000,
   location: "Tobin Expo Center",
-  discordLocation: "The Vision Center",
   events: [
     { name: "RSI", days: 1, limitedSales: "Constellation Phoenix" },
     { name: "Origin", days: 1, limitedSales: "890 Jump" },
@@ -182,7 +181,7 @@ function updateSchedule() {
         event.name
       } - Happening Now in ${
         event.location
-      }<span class="time-left">${timeLeftText}</span></div>`;
+      }<span class="time-left" data-countdown-to="${endTime}"></span></div>`;
     } else if (eventTimeLeft.hasPassed) {
       eventHTML += `<div class="event-name finished">${event.name} - Finished</div>`;
     } else {
@@ -254,6 +253,15 @@ function updateSchedule() {
   });
 }
 
+function updateCountdowns() {
+  const now = Date.now() / 1000;
+
+  document.querySelectorAll("[data-countdown-to]").forEach(element => {
+    const target = Number(element.dataset.countdownTo);
+    element.textContent = calculateTimeLeft(target - now);
+  });
+}
+
 window.onload = () => {
   populateTimeZones();
   const scheduleContainer = document.getElementById("schedule");
@@ -273,19 +281,17 @@ window.onload = () => {
 function copyToDiscord() {
   const discordSchedule = [
     `${scheduleConfig.title} Official Schedule:`,
-    "",
     ...schedule.map(event => {
       const lines = [
-        `**${event.name}:**`,
-        `<t:${event.timestamp}:f> [${scheduleConfig.discordLocation} <t:${event.timestamp}:R>]`
+        `**${event.name}:** <t:${event.timestamp}:f>`
       ];
 
       if (event.limitedSales) {
         lines.push(`Limited Ship Sales: ${event.limitedSales}`);
         lines.push(
-          event.waveTimestamps
-            .map((timestamp, index) => `Wave ${index + 1}: <t:${timestamp}:T>`)
-            .join(", ")
+          ...event.waveTimestamps.map(
+            (timestamp, index) => `Wave ${index + 1}: <t:${timestamp}:T>`
+          )
         );
       }
 
@@ -297,10 +303,15 @@ function copyToDiscord() {
     })
   ].join("\n\n");
 
+  const copyButton = document.getElementById("copyToDiscordBtn");
+  if (discordSchedule.length > 2000) {
+    copyButton.innerText = `Schedule exceeds Discord's 2000-character limit (${discordSchedule.length}).`;
+    return;
+  }
+
   navigator.clipboard.writeText(discordSchedule).then(
     () => {
-      document.getElementById("copyToDiscordBtn").innerText =
-        "Copied schedule in Discord format";
+      copyButton.innerText = "Copied schedule in Discord format";
     },
     err => {
       console.error("Failed to copy text: ", err);
